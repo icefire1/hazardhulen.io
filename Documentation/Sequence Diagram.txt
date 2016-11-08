@@ -9,10 +9,13 @@ Server -> Server: generateToken()
 Server -> Client: updateToken(string token)
 note right of Client: Token is used for encryption
 Client -> Server: sendUrl(string encryptedUrl)
+Server -> Server: checkCache(string url)
+alt if url doesn't exists in cache
 Server -> ExternalWebsite: requestHTML(string url)
 ExternalWebsite --> Server: return HTML
 Server -> Server: cache(cacheObject)
-note right of Server: cacheObject{client.id, timeStamp, HTML}
+note right of Server: cacheObject{client.id, timeStamp, URL, HTML}
+end
 Server -> Client: updateClient(string encryptedHTML)
 Client -> Client: handleHTML(string HTML)
 
