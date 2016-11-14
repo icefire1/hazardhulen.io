@@ -14,7 +14,8 @@ var table = {
 		'deck': range(1, 52),
 		'turnHolder': 0,
 		'activePlayers': [],
-		'dealerHand': []
+		'dealerHand': [],
+		'state': 'idle'
 }
 
 nextPlayer() {
@@ -67,6 +68,17 @@ io.on('connection', function(client) {
 		player.bet = amt
 		client.emit('updateTableState', table)
 		client.broadcast.emit('updateTableState')
+
+		// Check whether all players have betted
+		for(ply in table.activePlayers) {
+			if(ply.bet == 0)  {
+				return
+			} else {
+				table.state = "playing"
+				client.emit('updateTableState', table)
+				client.broadcast.emit('updateTableState')
+			}
+		}
 	})
 
     client.on('hit', function() {
