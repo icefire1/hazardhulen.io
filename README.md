@@ -1,4 +1,4 @@
-# HazzardHulen.IO
+# HazardHulen.IO
 _The Web Casino, where money and booze is free, and the dealer doesn't give a shit..._
 
 ## UML Sequence Diagram
