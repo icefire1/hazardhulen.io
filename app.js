@@ -61,7 +61,13 @@ io.on('connection', function(client) {
 		client.broadcast.emit('updateTableState')
 	})
 
-
+    client.on('hit', function() {
+        
+    })
+    
+    client.on('stand', function(){
+        
+    })
 })
 
 server.listen(13337)

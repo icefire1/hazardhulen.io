@@ -10,7 +10,7 @@ c -> s: joinTable()
 s -> s: addClient\nToConnected\nList()
 s -> c: updateTable(table)
 
-note right of c: player bet
+note right of c: player bet\n30 Sec timer before \nforced to leave table
 c -> s: bet(amount: int)
 alt bet already made
 s --> c: errorAlreadyPlacedBet()
@@ -19,21 +19,25 @@ s --> c: errorCantAffordBet()
 else
 s -> s: updatePot
 end
+s -> c: updateTable(table)
+
+s -> s: startRound
+note right of s: deals two initial \ncards to all players \nand the dealer.
 
 note right of c: hit / stand logic
+loop for each active player
 alt hit
 c -> s: hit()
 s -> s: PickRandomCard
-note right of s: Checks if card \nfits game logic
+note right of s: apply game rules
 else stand
 c -> s: stand()
 s -> s: skipClientTurn
 end
 s --> c: updateTable(table)
-
-loop on changes to the table
-s -> c: updateTable(table)
 end
+
+s -> s: DealerTurn
 
 else User Joins a table ot spectate
 c -> s: spectateTable()
