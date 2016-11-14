@@ -5,13 +5,13 @@ var io = require('socket.io')(server)
 var monolog = require('monolog')
 var Logger = monolog.Logger
 var ConsoleLogHandler = monolog.handler.ConsoleLogHandler
-var range = require('lodash/range')
+var _ = require('lodash')
 
 var log = new Logger('hazardhulen')
 log.pushHandler(new ConsoleLogHandler())
 
 var table = {
-		'deck': range(1, 52),
+		'deck': _.shuffle(_.range(1, 52)),
 		'turnHolder': 0,
 		'activePlayers': [],
 		'dealerHand': [],
@@ -52,7 +52,7 @@ io.on('connection', function(client) {
 
 	client.on('bet', function(amt) {
 		// Don't allow player to bet twice
-		if(player.balance != 0) {
+		if(player.bet != 0) {
 			client.emit('errorAlreadyPlacedBet')
 			return
 		}
@@ -71,14 +71,21 @@ io.on('connection', function(client) {
 
 		// Check whether all players have betted
 		for(ply in table.activePlayers) {
-			if(ply.bet == 0)  {
-				return
-			} else {
-				table.state = "playing"
-				client.emit('updateTableState', table)
-				client.broadcast.emit('updateTableState')
-			}
+			if(ply.bet == 0) return
 		}
+
+		// Start game
+		table.state = "playing"
+
+		// Deal cards
+		for(ply in table.activePlayers) {
+			ply.hand = _.times(2, table.deck.pop)
+		}
+
+		table.dealerHand = _.times(2, table.deck.pop)
+
+		client.emit('updateTableState', table)
+		client.broadcast.emit('updateTableState')
 	})
 
     client.on('hit', function() {
