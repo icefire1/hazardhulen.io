@@ -6,15 +6,19 @@ var monolog = require('monolog')
 var Logger = monolog.Logger
 var ConsoleLogHandler = monolog.handler.ConsoleLogHandler
 var range = require('lodash/range')
-
 var log = new Logger('hazardhulen')
 log.pushHandler(new ConsoleLogHandler())
 
 var table = {
 		'deck': range(1, 52),
-		'turnHolder': null,
-		'activePlayers': {},
+		'turnHolder': 0,
+		'activePlayers': [],
 		'dealerHand': []
+}
+
+nextPlayer() {
+	table.turnHolder = (table.turnHolder + 1) % table.activePlayers.length
+	return table.activePlayers[table.turnHolder]
 }
 
 app.use(express.static(__dirname + '/bower_components'))
@@ -24,11 +28,14 @@ app.get('/', function(req, res, next) {
 
 io.on('connection', function(client) {
 	var id = client.conn.id
+	var player = null
+
 	client.emit('setId', id)
 	client.emit('updateTableState', table)
 
 	client.on('joinTable', function() {
-		var player = {
+		player = {
+			'id': id,
 			'socket': client,
 			'hand': [],
 			'bet': 0,
@@ -36,32 +43,30 @@ io.on('connection', function(client) {
 		}
 
 		// TODO: Fix hardcoded index
-		table.activePlayers[id] = player
+		table.activePlayers.push(player)
 		client.emit('updateTableState', table)
 		client.broadcast.emit('updateTableState', table)
 	})
 
 	client.on('bet', function(amt) {
 		// Don't allow player to bet twice
-		if(table.activePlayers[id].balance != 0) {
+		if(player.balance != 0) {
 			client.emit('errorAlreadyPlacedBet')
 			return
 		}
 
 		// Don't allow player to place bets he can't afford
-		if(amt > table.activePlayers[id].balance) {
+		if(amt > player.balance) {
 			client.emit('errorCantAffordBet')
 			return
 		}
 
 		// Set bet and broadcast table state
-		table.activePlayers[id].balance -= amt
-		table.activePlayers[id].bet = amt
+		player.balance -= amt
+		player.bet = amt
 		client.emit('updateTableState', table)
 		client.broadcast.emit('updateTableState')
 	})
-
-
 })
 
 server.listen(13337)
