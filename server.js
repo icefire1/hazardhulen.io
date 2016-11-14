@@ -8,7 +8,7 @@ var io = require('socket.io')(http);
 var AES = require("crypto-js/aes");
 var SHA256 = require("crypto-js/sha256");
 
-port = 8889
+port = 13337
 
 http.listen(port, function(){
     console.log('Server listening on ' + port)

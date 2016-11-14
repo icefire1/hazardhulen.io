@@ -6,11 +6,9 @@
         type="text/javascript"></script>
         <script src="node_modules/crypto-js/crypto-js.js"></script>
         <script>
-            var port = 8889
+            var port = 13337
             
-            var socket = io();
-            
-            socket.connect("http://localhost:"+port)
+            var socket = io.connect("http://localhost:"+port+"/");
             
             var Token;
         

@@ -1,0 +1,44 @@
+
+participant client as c
+participant server as s
+
+note right of c: Client Connects \nto the server
+c -> s: onConnect()
+s --> c: updateBoardState(boardState)
+
+alt User Joins a table to play
+c -> s: joinTable(seatNumber : int)
+s -> s: addClient\nToConnected\nList()
+s -> c: updateBoardState(boardState)
+
+alt bet
+c -> s: bet(amount: int)
+s -> s: updatePot
+else sit out
+c -> s: skipTurn()
+s -> s: skipCLientTurn()
+end
+alt hit
+c -> s: hit()
+s -> s: PickRandomCard
+note right of s: Checks if card \nfits game logic
+else stand
+c -> s: stand()
+s -> s: skipClientTurn
+end
+s --> c: updateBoardState(boardState)
+
+
+loop on changes to the board
+s -> c: updateBoardState(boardState)
+end
+
+else User Joins a table ot spectate
+c -> s: spectateTable()
+s -> s: addClient\nToConnected\nList()
+loop on changes to the board
+s -> c: updateBoardState(boardState)
+end
+end
+c -> s: leaveTable
+s --> c: updateBoardState(boardState)
