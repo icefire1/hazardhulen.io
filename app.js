@@ -6,6 +6,7 @@ var monolog = require('monolog')
 var Logger = monolog.Logger
 var ConsoleLogHandler = monolog.handler.ConsoleLogHandler
 var range = require('lodash/range')
+
 var log = new Logger('hazardhulen')
 log.pushHandler(new ConsoleLogHandler())
 
@@ -67,6 +68,14 @@ io.on('connection', function(client) {
 		client.emit('updateTableState', table)
 		client.broadcast.emit('updateTableState')
 	})
+
+    client.on('hit', function() {
+
+    })
+
+    client.on('stand', function(){
+
+    })
 })
 
 server.listen(13337)

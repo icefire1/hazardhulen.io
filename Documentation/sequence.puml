@@ -1,44 +1,51 @@
-
 participant client as c
 participant server as s
 
 note right of c: Client Connects \nto the server
 c -> s: onConnect()
-s --> c: updateBoardState(boardState)
+s --> c: updateTable(table)
 
 alt User Joins a table to play
-c -> s: joinTable(seatNumber : int)
+c -> s: joinTable()
 s -> s: addClient\nToConnected\nList()
-s -> c: updateBoardState(boardState)
+s -> c: updateTable(table)
 
-alt bet
+note right of c: player bet\n30 Sec timer before \nforced to leave table
 c -> s: bet(amount: int)
+alt bet already made
+s --> c: errorAlreadyPlacedBet()
+else bet > balance
+s --> c: errorCantAffordBet()
+else
 s -> s: updatePot
-else sit out
-c -> s: skipTurn()
-s -> s: skipCLientTurn()
 end
+s -> c: updateTable(table)
+
+s -> s: startRound
+note right of s: deals two initial \ncards to all players \nand the dealer.
+
+note right of c: hit / stand logic
+loop for each active player
 alt hit
 c -> s: hit()
 s -> s: PickRandomCard
-note right of s: Checks if card \nfits game logic
+note right of s: apply game rules
 else stand
 c -> s: stand()
 s -> s: skipClientTurn
 end
-s --> c: updateBoardState(boardState)
-
-
-loop on changes to the board
-s -> c: updateBoardState(boardState)
+s --> c: updateTable(table)
 end
+
+s -> s: DealerTurn
 
 else User Joins a table ot spectate
 c -> s: spectateTable()
 s -> s: addClient\nToConnected\nList()
-loop on changes to the board
-s -> c: updateBoardState(boardState)
+
+loop on changes to the table
+s -> c: updateTable(table)
 end
 end
 c -> s: leaveTable
-s --> c: updateBoardState(boardState)
+s --> c: updateTable(table)
