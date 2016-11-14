@@ -20,7 +20,32 @@ var table = {
 
 nextPlayer() {
 	table.turnHolder = (table.turnHolder + 1) % table.activePlayers.length
+	client.emit('updateTableState', table)
+	client.broadcast.emit('updateTableState')
 	return table.activePlayers[table.turnHolder]
+}
+
+calculateScore(hand) {
+	var values = []
+	var numAces = 0
+
+	for(var card in hand) {
+		// Value of image cards is 10
+		var value = Math.min(card % 13, 10)
+		if(value == 1) {
+			value = 11
+			numAces += 1
+		}
+		values.push(card % 13)
+	}
+
+	var sum = values.reduce((a, b) => a + b, 0)
+	while(sum > 21 && numAces > 0) {
+		numAces -= 1
+		sum -= 10
+	}
+
+	return sum
 }
 
 app.use(express.static(__dirname + '/bower_components'))
@@ -89,11 +114,30 @@ io.on('connection', function(client) {
 	})
 
     client.on('hit', function() {
+		// Make sure that hitter is current player
+		if(client.conn.id != table.activePlayers[table.turnHolder].id) {
+			log.notice("Non-current player sent hit")
+			return
+		}
 
+		// Draw a card
+		player.hand.push(table.deck.pop())
+
+		// Check for bust/blackjack
+		var score = calculateScore()
+		if(score >= 21) {
+			nextPlayer()
+		}
     })
 
     client.on('stand', function(){
+		// Make sure that stander is current player
+		if(client.conn.id != table.activePlayers[table.turnHolder].id) {
+			log.notice("Non-current player sent stand")
+			return
+		}
 
+		nextPlayer()
     })
 })
 
