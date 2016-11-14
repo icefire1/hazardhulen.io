@@ -1,0 +1,15 @@
+package Server {
+  class Table {
+    turnHolder : Player
+    activePlayers : list<Player>
+    dealerHand : list<int>
+    deck : list<int>
+  }
+
+  class Player {
+    id : string
+    hand : list<int>
+    bet : int
+    balance : int
+  }
+}
