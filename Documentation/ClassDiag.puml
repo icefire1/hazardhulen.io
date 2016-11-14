@@ -1,5 +1,6 @@
 package Server {
   class Table {
+    state : string
     turnHolder : Player
     activePlayers : list<Player>
     dealerHand : list<int>
