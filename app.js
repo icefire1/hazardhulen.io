@@ -65,6 +65,7 @@ io.on('connection', function(client) {
 			'id': id,
 			'socket': client,
 			'hand': [],
+			'score': 0,
 			'bet': 0,
 			'balance': 15000
 		}
@@ -114,6 +115,11 @@ io.on('connection', function(client) {
 	})
 
     client.on('hit', function() {
+		// Make sure that game is in playing state
+		if(table.state != "playing") {
+			return
+		}
+
 		// Make sure that hitter is current player
 		if(client.conn.id != table.activePlayers[table.turnHolder].id) {
 			log.notice("Non-current player sent hit")
@@ -125,12 +131,18 @@ io.on('connection', function(client) {
 
 		// Check for bust/blackjack
 		var score = calculateScore()
+		player.score = score
 		if(score >= 21) {
 			nextPlayer()
 		}
     })
 
     client.on('stand', function(){
+		// Make sure that game is in playing state
+		if(table.state != "playing") {
+			return
+		}
+
 		// Make sure that stander is current player
 		if(client.conn.id != table.activePlayers[table.turnHolder].id) {
 			log.notice("Non-current player sent stand")
