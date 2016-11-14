@@ -1,0 +1,22 @@
+{
+  "name": "hazardhulen.io",
+  "description": "The Web Casino, where money and booze is free, and the dealer doesn't give a shit...",
+  "main": "index.js",
+  "authors": [
+    "DrBumlehund"
+  ],
+  "license": "GPL-3.0",
+  "keywords": [
+    "hazard",
+    "hule"
+  ],
+  "homepage": "https://github.com/DrBumlehund/hazardhulen.io",
+  "private": true,
+  "ignore": [
+    "**/.*",
+    "node_modules",
+    "bower_components",
+    "test",
+    "tests"
+  ]
+}
