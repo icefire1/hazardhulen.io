@@ -1,27 +1,206 @@
 <!DOCTYPE HTML>
 <html>
-    <head>
-        <script src="https://cdn.socket.io/socket.io-1.4.5.js"></script>
-        <script src="http://code.jquery.com/jquery-latest.min.js"
-        type="text/javascript"></script>
-        <script src="node_modules/crypto-js/crypto-js.js"></script>
-        <script>
-            var port = 13337
-            
-            var socket = io.connect("http://localhost:"+port+"/");
-            
-            var Token;
-        
-            socket.on('updateToken', function(token){
-                Token = token;
-                console.log("CLIENT: " + Token)
+<head>
+    <script src="bower_components/socket.io-client/socket.io.js"></script>
+    <script src="bower_components/jquery/dist/jquery.js"></script>
+
+    <script>
+
+
+        $(function () {
+            $('#leave').hide();
+            debug(JSON.stringify(table));
+        });
+
+        var table = {
+            "deck":[ 1,  2,  3,  4,  5,  6,  7,  8,  9, 10,
+                11, 12, 13, 14, 15, 16, 17, 18, 19, 20,
+                21, 22, 23, 24, 25, 26, 27, 28, 29, 30,
+                31, 32, 33, 34, 35, 36, 37, 38, 39, 40,
+                41, 42, 43, 44, 45, 46, 47, 48, 49, 50,
+                51, 52],
+            "turnHolder": 0,
+            "activePlayers": [
+                {"id": 1, "socket": "help", "hand": [3, 7], "bet": 25, "balance": 15000 },
+                {"id": 2, "socket": "this", "hand": [25, 48], "bet": 2, "balance": 15000},
+                {"id": 3, "socket": "is gut", "hand": [27, 14], "bet": 75, "balance": 15000}],
+            "dealerHand": [1, 10, 1, 1]
+        }
+
+        var port = 13337;
+
+
+
+        var timeInterval;
+
+        var ID = null;
+
+        var socket = io.connect("http://localhost:" + port + "/");
+
+
+        socket.on('updateBoardState', function (boardState) {
+            //Handle Board State
+
+            var boardState = JSON.parse(dummyData);
+
+            updatePlayers(boardState);
+
+            $.each(boardState.dealerHand, function (i, card) {
+                addCard(7, card, i)
             });
-            socket.on('updateClient', function(encryptedHTML){
-                // TODO: make method to update client.
+
+
+        });
+
+        function debug(dummyData){
+            var boardState = JSON.parse(dummyData);
+
+            updatePlayers(boardState);
+
+            $.each(boardState.dealerHand, function (i, card) {
+                addCard(7, card, i)
             });
-            
-        </script>
-    </head>
-    <body>
-    </body>
+        }
+
+        socket.on('setId', function (id) {
+            ID = id;
+        });
+
+        function updatePlayers(board) {
+
+            $.each(board.activePlayers, function (i, player) {
+
+
+                $.each(player.hand, function (ii, card) {
+                    addCard(i, card, ii)
+                });
+
+
+                if (player.id == ID) {
+                    $("#currentBet").html(player.bet);
+                    $("#cash").html(player.balance);
+                    $("_player" + i).css("background-color", "darkgreen");
+                    if (boardState.turnHolder == ID) {
+                        startTimer(15000);
+                        $("_player" + i).css("border", "2px solid pink");
+                        $('#hit').show();
+                        $('#bet').show();
+                        $('#stand').show();
+                    }
+                }else {
+                    $("_player" + i).css("border", "1px solid darkgreen");
+                    $('#hit').hide();
+                    $('#bet').hide();
+                    $('#stand').hide();
+
+                    if (player.id == board.turnHolder) {
+                        $("_player" + i).css("border", "2px solid red");
+                    }
+                }
+
+
+            });
+
+        }
+
+        function startTimer(time) {
+            $("#time").html(time);
+            timeInterval = setInterval(updateTimer(), 1000);
+        }
+
+        function updateTimer() {
+            $("#time").html($("#time").html() - 1);
+            //WIll go in minus
+            if($("#time").html() <= 0){
+                clearInterval(timeInterval);
+            }
+        }
+
+        function addCard(seat, card, i) {
+            //margin-left:" + (i * -20) + "px
+            $("#_player" + seat).append("<img src='img/cards/" + card + ".png' style='width:100px;height:145px;margin-top:" + (i * -135) + "px' />");
+        }
+
+        function joinTable() {
+            $('#join').hide();
+            $('#leave').show();
+            socket.emit('joinTable', null);
+        }
+
+        function bet() {
+            var amount = prompt("Please enter the amount you wish to bet.", "5");
+            socket.emit('bet', amount);
+        }
+
+        function hit() {
+
+            socket.emit('hit', null)
+        }
+
+        function stand() {
+            socket.emit('stand', null)
+        }
+
+        function leaveTable() {
+            $('#join').show();
+            $('#leave').hide();
+            socket.emit('leaveTable', null)
+        }
+
+
+    </script>
+    <style>
+
+        .playerSlot {
+            float: left;
+            width: 100px;
+            min-height: 145px;
+            background-color: red;
+            margin-left: 100px;
+            border: 2px solid darkgreen;
+        }
+
+        body {
+            background-color: #5DB000;
+
+        }
+
+        .cash {
+            font-weight: bold;
+            color: white;
+        }
+    </style>
+</head>
+<body>
+<div id="playerOptions">
+    <span class="cash">Time: <span id="time">30</span></span></br>
+    <span class="cash">Cash: <span id="cash">50</span></span></br>
+    <span class="cash">Bet: <span id="currentBet">0</span></span>
+    </br>
+    <button id="bet" onclick="bet()">Bet</button>
+    <button id="hit" onclick="hit()">Hit</button>
+    <button id="stand" onclick="stand()">Stand</button>
+</div>
+
+
+
+<button id="join" onclick="joinTable()">Join</button>
+<button id="leave" onclick="leaveTable()">Leave</button>
+
+<center>
+    <div id="_player7" style="width:100px;height:145px;background-color:blue;border:2px solid darkgreen;">
+
+    </div>
+</center>
+
+<div style="margin-top:200px;">
+    <div class="playerSlot" id="_player1"></div>
+    <div class="playerSlot" id="_player2"></div>
+    <div class="playerSlot" id="_player3"></div>
+    <div class="playerSlot" id="_player4"></div>
+    <div class="playerSlot" id="_player5"></div>
+    <div class="playerSlot" id="_player6"></div>
+</div>
+
+</body>
 </html>
