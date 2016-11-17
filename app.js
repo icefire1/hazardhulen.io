@@ -10,38 +10,39 @@ var _ = require('lodash');
 var log = new Logger('hazardhulen');
 log.pushHandler(new ConsoleLogHandler());
 
-var table = {
-    'deck': _.shuffle(_.range(1, 52)),
-    'turnHolder': 0,
-    'activePlayers': [],
-    'dealerHand': [],
-    'state': 'idle'
+function table() {
+    this.deck = _.shuffle(_.range(1, 52)),
+    this.turnHolder = 0,
+    this.activePlayers =[],
+    this.dealerHand = [],
+    this.state = 'idle'
 };
+
+function Player(id) {
+            this.id = id,
+            this.hand = [],
+            this.score = 0,
+            this.bet = 0,
+            this.balance = 15000
+};
+
+var table = new table();
 
 function drawCard() {
     var deck = table.deck;
     var card = deck[deck.length-1];
-    deck.pop;
+	deck.length = deck.length - 1;
     return card;
 }
 
 function nextPlayer() {
     log.info("Next player", table.turnHolder)
+	
+	table.turnHolder++;
 
-    var isNext = false;
-    for (ply in table.activePlayers) {
-        if (isNext) {
-            table.turnHolder = ply.id;
-            io.sockets.emit('updateTableState', table);
-            return;
-        }
-        else if (table.turnHolder == ply.id) {
-            isNext = true;
-        }
-    }
-
-    //If we are outside the loop, then it's the dealers turn
-    dealerTurn();
+    if(table.turnHolder > table.activePlayers.length){
+	dealerTurn();	
+	}
 }
 
 function dealerTurn() {
@@ -55,24 +56,41 @@ function calculateScore(hand) {
     var numAces = 0;
 
     for (var card in hand) {
+		card = hand[card]
         // Value of image cards is 10
         var value = Math.min(card % 13, 10);
         if (value == 1) {
             value = 11;
             numAces += 1;
-        }
-        values.push(card % 13);
+        } else if(value == 0) {
+			value = 10;
+		}
+        values.push(value);
+		log.debug(card + " = " + value)
     }
 
-    var sum = values.reduce(function() {
-        return a + b
-    }, 0)
+    var sum = _.sum(values)
     while (sum > 21 && numAces > 0) {
         numAces -= 1;
         sum -= 10;
     }
 
+	log.debug("Score calculated", sum)
     return sum;
+}
+
+function updateTableState(){
+	log.debug(table);
+	io.sockets.emit('updateTableState', JSON.stringify(table));
+}
+
+function findPlayer(id){
+		log.debug("Finding player - entering loop for id", id)
+	     for (var ply in table.activePlayers) {
+			 ply = table.activePlayers[ply];
+			 log.debug("Finding player", ply.id)
+            if (ply.id == id) return ply;
+        }
 }
 
 app.use(express.static(__dirname + '/bower_components'));
@@ -82,36 +100,29 @@ app.get('/', function (req, res, next) {
 
 io.on('connection', function (client) {
     var id = client.conn.id;
-    var player = null;
-
+	
     client.emit('setId', id);
-    client.emit('updateTableState', table);
+    updateTableState();
 
     client.on('joinTable', function () {
-        player = {
-            'id': id,
-            'socket': client,
-            'hand': [],
-            'score': 0,
-            'bet': 0,
-            'balance': 15000
-        };
-
-        table.activePlayers[player.id] = player;
-        io.sockets.emit('updateTableState', table);
+		log.notice("Hej jeg bliver kaldt");
+		var id = client.conn.id;
+		player = new Player(id);
+        table.activePlayers.push(player);
+        updateTableState();
         log.notice(player.id + " has joined the table.");
     });
 
     client.on('leaveTable', function () {
         if (table.state != "playing") {
             delete table.activePlayers[client.conn.id];
-            io.sockets.emit('updateTableState', table);
+            updateTableState();
         }
     });
 
     client.on('bet', function (amt) {
         // Don't allow player to bet twice
-        var player = table.activePlayers[client.conn.id];
+        var player = findPlayer(client.conn.id)//TODO: find player function
         if (player.bet != 0) {
             client.emit('errorAlreadyPlacedBet');
             return;
@@ -126,10 +137,11 @@ io.on('connection', function (client) {
         // Set bet and broadcast table state
         player.balance -= amt;
         player.bet = amt;
-        io.sockets.emit('updateTableState', table);
+        updateTableState();
 
         // Check whether all players have betted
-        for (ply in table.activePlayers) {
+        for (var ply in table.activePlayers) {
+			 ply = table.activePlayers[ply];
             if (ply.bet == 0) return;
         }
 
@@ -137,13 +149,16 @@ io.on('connection', function (client) {
         table.state = "playing";
 
         // Deal cards
-        for (ply in table.activePlayers) {
+        for (var ply in table.activePlayers) {
+			 ply = table.activePlayers[ply];
             ply.hand = [drawCard(), drawCard()];
+			log.notice("Player Hand: ", ply.hand);
         }
 
         table.dealerHand = [drawCard(), drawCard()];
-
-        io.sockets.emit('updateTableState', table);
+log.notice("Dealer hand: ", table.dealerHand);
+		
+        updateTableState();
     });
 
     client.on('hit', function () {
@@ -152,8 +167,10 @@ io.on('connection', function (client) {
             return;
         }
 
+		var player = findPlayer(client.conn.id);
         // Make sure that hitter is current player
-        if (client.conn.id != table.turnHolder) {
+		log.notice(table.activePlayers.indexOf(player));
+        if (table.activePlayers.indexOf(player) != table.turnHolder) {
             log.notice("Non-current player sent hit");
             return;
         }
@@ -162,11 +179,12 @@ io.on('connection', function (client) {
         player.hand.push(drawCard());
 
         // Check for bust/blackjack
-        var score = calculateScore();
+        var score = calculateScore(player.hand);
         player.score = score;
         if (score >= 21) {
             nextPlayer();
         }
+		updateTableState();
     });
 
     client.on('stand', function () {

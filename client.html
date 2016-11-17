@@ -9,6 +9,7 @@
 
         $(function () {
             $('#leave').hide();
+			
             //debug(JSON.stringify(table));
         });
 
@@ -38,40 +39,38 @@
         var socket = io.connect("http://localhost:" + port + "/");
 
 
-        socket.on('updateBoardState', function (boardState) {
+        socket.on('updateTableState', function (boardState) {
             //Handle Board State
+			reset();
+			console.log("Updating Board State: " + JSON.stringify(boardState));
+            var boardState = JSON.parse(boardState);
 
-            var boardState = JSON.parse(dummyData);
-
+			console.log(boardState);
             updatePlayers(boardState);
 
             $.each(boardState.dealerHand, function (i, card) {
-                addCard(7, card, i)
+                addCard(6, card, i)
+				//console.log(boardState.dealerHand);
             });
 
 
         });
-
-        function debug(dummyData){
-            var boardState = JSON.parse(dummyData);
-
-            updatePlayers(boardState);
-
-            $.each(boardState.dealerHand, function (i, card) {
-                addCard(7, card, i)
-            });
-        }
 
         socket.on('setId', function (id) {
             ID = id;
         });
+		
+		function reset(){
+		$("#_player7").html("");
+		$("#cardHolder").html('<div class="playerSlot" id="_player1"></div><div class="playerSlot" id="_player2"></div><div class="playerSlot" id="_player3"></div><div class="playerSlot" id="_player4"></div><div class="playerSlot" id="_player5"></div><div class="playerSlot" id="_player6"></div>');
+		}
 
         function updatePlayers(board) {
 
             $.each(board.activePlayers, function (i, player) {
 
-
                 $.each(player.hand, function (ii, card) {
+					console.log("Hej");
                     addCard(i, card, ii)
                 });
 
@@ -117,8 +116,9 @@
         }
 
         function addCard(seat, card, i) {
+		console.log(seat + " "+ card + " " + i);
             //margin-left:" + (i * -20) + "px
-            $("#_player" + seat).append("<img src='img/cards/" + card + ".png' style='width:100px;height:145px;margin-top:" + (i * -135) + "px' />");
+            $("#_player" + (seat+1)).append("<img src='img/cards/" + card + ".png' style='width:100px;height:145px;margin-top:" + (i * -135) + "px' />");
         }
 
         function joinTable() {
@@ -187,14 +187,12 @@
 <button id="leave" onclick="leaveTable()">Leave</button>
 
 <center>
-    <div id="_player7" style="width:100px;height:145px;background-color:blue;border:2px solid darkgreen;">
-
-    </div>
+    <div id="_player7" style="width:100px;height:145px;background-color:blue;border:2px solid darkgreen;"></div>
 </center>
 
 
 <div style="margin-top:200px;text-align: center">
-    <div style="display: inline-block;">
+    <div id="cardHolder" style="display: inline-block;">
     <div class="playerSlot" id="_player1"></div>
     <div class="playerSlot" id="_player2"></div>
     <div class="playerSlot" id="_player3"></div>
