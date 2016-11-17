@@ -1,15 +1,15 @@
 <!DOCTYPE HTML>
 <html>
 <head>
-    <script src="bower_components/socket.io-client/socket.io.js"></script>
-    <script src="bower_components/jquery/dist/jquery.js"></script>
+    <script src="/socket.io-client/socket.io.js"></script>
+    <script src="/jquery/dist/jquery.js"></script>
 
     <script>
 
 
         $(function () {
             $('#leave').hide();
-            debug(JSON.stringify(table));
+            //debug(JSON.stringify(table));
         });
 
         var table = {
@@ -25,7 +25,7 @@
                 {"id": 2, "socket": "this", "hand": [25, 48], "bet": 2, "balance": 15000},
                 {"id": 3, "socket": "is gut", "hand": [27, 14], "bet": 75, "balance": 15000}],
             "dealerHand": [1, 10, 1, 1]
-        }
+        };
 
         var port = 13337;
 
@@ -80,7 +80,7 @@
                     $("#currentBet").html(player.bet);
                     $("#cash").html(player.balance);
                     $("_player" + i).css("background-color", "darkgreen");
-                    if (boardState.turnHolder == ID) {
+                    if (board.turnHolder == ID) {
                         startTimer(15000);
                         $("_player" + i).css("border", "2px solid pink");
                         $('#hit').show();
@@ -124,7 +124,7 @@
         function joinTable() {
             $('#join').hide();
             $('#leave').show();
-            socket.emit('joinTable', null);
+            socket.emit('joinTable');
         }
 
         function bet() {
@@ -133,18 +133,17 @@
         }
 
         function hit() {
-
-            socket.emit('hit', null)
+            socket.emit('hit')
         }
 
         function stand() {
-            socket.emit('stand', null)
+            socket.emit('stand')
         }
 
         function leaveTable() {
             $('#join').show();
             $('#leave').hide();
-            socket.emit('leaveTable', null)
+            socket.emit('leaveTable')
         }
 
 
@@ -193,14 +192,18 @@
     </div>
 </center>
 
-<div style="margin-top:200px;">
+
+<div style="margin-top:200px;text-align: center">
+    <div style="display: inline-block;">
     <div class="playerSlot" id="_player1"></div>
     <div class="playerSlot" id="_player2"></div>
     <div class="playerSlot" id="_player3"></div>
     <div class="playerSlot" id="_player4"></div>
     <div class="playerSlot" id="_player5"></div>
     <div class="playerSlot" id="_player6"></div>
+    </div>
 </div>
+
 
 </body>
 </html>

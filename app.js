@@ -1,157 +1,192 @@
-var express = require('express')
-var app = express()
-var server = require('http').createServer(app)
-var io = require('socket.io')(server)
-var monolog = require('monolog')
-var Logger = monolog.Logger
-var ConsoleLogHandler = monolog.handler.ConsoleLogHandler
-var _ = require('lodash')
+var express = require('express');
+var app = express();
+var server = require('http').createServer(app);
+var io = require('socket.io')(server);
+var monolog = require('monolog');
+var Logger = monolog.Logger;
+var ConsoleLogHandler = monolog.handler.ConsoleLogHandler;
+var _ = require('lodash');
 
-var log = new Logger('hazardhulen')
-log.pushHandler(new ConsoleLogHandler())
+var log = new Logger('hazardhulen');
+log.pushHandler(new ConsoleLogHandler());
 
 var table = {
-		'deck': _.shuffle(_.range(1, 52)),
-		'turnHolder': 0,
-		'activePlayers': [],
-		'dealerHand': [],
-		'state': 'idle'
+    'deck': _.shuffle(_.range(1, 52)),
+    'turnHolder': 0,
+    'activePlayers': [],
+    'dealerHand': [],
+    'state': 'idle'
+};
+
+function drawCard() {
+    var deck = table.deck;
+    var card = deck[deck.length-1];
+    deck.pop;
+    return card;
 }
 
-nextPlayer() {
-	table.turnHolder = (table.turnHolder + 1) % table.activePlayers.length
-	client.emit('updateTableState', table)
-	client.broadcast.emit('updateTableState')
-	return table.activePlayers[table.turnHolder]
+function nextPlayer() {
+    //table.turnHolder = (table.turnHolder + 1) % table.activePlayers.length;
+    //return table.activePlayers[table.turnHolder];
+
+    var isNext = false;
+    for (ply in table.activePlayers) {
+        if (isNext) {
+            table.turnHolder = ply.id;
+            io.sockets.emit('updateTableState', table);
+            return;
+        }
+        else if (table.turnHolder == ply.id) {
+            isNext = true;
+        }
+    }
+
+    //If we are outside the loop, then it's the dealers turn
+    dealerTurn();
 }
 
-calculateScore(hand) {
-	var values = []
-	var numAces = 0
-
-	for(var card in hand) {
-		// Value of image cards is 10
-		var value = Math.min(card % 13, 10)
-		if(value == 1) {
-			value = 11
-			numAces += 1
-		}
-		values.push(card % 13)
-	}
-
-	var sum = values.reduce((a, b) => a + b, 0)
-	while(sum > 21 && numAces > 0) {
-		numAces -= 1
-		sum -= 10
-	}
-
-	return sum
+function dealerTurn() {
+    //Draw cards (If more than 50% players are above dealer, draw card) - LorteLogic(TM)
+    //Calculate Winners
+    //Payout
 }
 
-app.use(express.static(__dirname + '/bower_components'))
-app.get('/', function(req, res, next) {
-	res.sendFile(__dirname + '/client.html')
-})
+function calculateScore(hand) {
+    var values = [];
+    var numAces = 0;
 
-io.on('connection', function(client) {
-	var id = client.conn.id
-	var player = null
+    for (var card in hand) {
+        // Value of image cards is 10
+        var value = Math.min(card % 13, 10);
+        if (value == 1) {
+            value = 11;
+            numAces += 1;
+        }
+        values.push(card % 13);
+    }
 
-	client.emit('setId', id)
-	client.emit('updateTableState', table)
+    //var sum = values.reduce((a, b) = > a + b, 0)
+    while (sum > 21 && numAces > 0) {
+        numAces -= 1;
+        sum -= 10;
+    }
 
-	client.on('joinTable', function() {
-		player = {
-			'id': id,
-			'socket': client,
-			'hand': [],
-			'score': 0,
-			'bet': 0,
-			'balance': 15000
-		}
+    return sum;
+}
 
-		// TODO: Fix hardcoded index
-		table.activePlayers.push(player)
-		client.emit('updateTableState', table)
-		client.broadcast.emit('updateTableState', table)
-	})
+app.use(express.static(__dirname + '/bower_components'));
+app.get('/', function (req, res, next) {
+    res.sendFile(__dirname + '/client.html');
+});
 
-	client.on('bet', function(amt) {
-		// Don't allow player to bet twice
-		if(player.bet != 0) {
-			client.emit('errorAlreadyPlacedBet')
-			return
-		}
+io.on('connection', function (client) {
+    var id = client.conn.id;
+    var player = null;
 
-		// Don't allow player to place bets he can't afford
-		if(amt > player.balance) {
-			client.emit('errorCantAffordBet')
-			return
-		}
+    client.emit('setId', id);
+    client.emit('updateTableState', table);
 
-		// Set bet and broadcast table state
-		player.balance -= amt
-		player.bet = amt
-		client.emit('updateTableState', table)
-		client.broadcast.emit('updateTableState')
+    client.on('joinTable', function () {
+        player = {
+            'id': id,
+            'socket': client,
+            'hand': [],
+            'score': 0,
+            'bet': 0,
+            'balance': 15000
+        };
 
-		// Check whether all players have betted
-		for(ply in table.activePlayers) {
-			if(ply.bet == 0) return
-		}
+        table.activePlayers[player.id] = player;
+        io.sockets.emit('updateTableState', table);
+        log.notice(player.id + " has joined the table.");
+    });
 
-		// Start game
-		table.state = "playing"
+    client.on('leaveTable', function () {
+        if (table.state != "playing") {
+            delete table.activePlayers[client.conn.id];
+            io.sockets.emit('updateTableState', table);
+        }
+    });
 
-		// Deal cards
-		for(ply in table.activePlayers) {
-			ply.hand = _.times(2, table.deck.pop)
-		}
+    client.on('bet', function (amt) {
+        // Don't allow player to bet twice
+        var player = table.activePlayers[client.conn.id];
+        if (player.bet != 0) {
+            client.emit('errorAlreadyPlacedBet');
+            return;
+        }
 
-		table.dealerHand = _.times(2, table.deck.pop)
+        // Don't allow player to place bets he can't afford
+        if (amt > player.balance) {
+            client.emit('errorCantAffordBet');
+            return;
+        }
 
-		client.emit('updateTableState', table)
-		client.broadcast.emit('updateTableState')
-	})
+        // Set bet and broadcast table state
+        player.balance -= amt;
+        player.bet = amt;
+        io.sockets.emit('updateTableState', table);
 
-    client.on('hit', function() {
-		// Make sure that game is in playing state
-		if(table.state != "playing") {
-			return
-		}
+        // Check whether all players have betted
+        for (ply in table.activePlayers) {
+            if (ply.bet == 0) return;
+        }
 
-		// Make sure that hitter is current player
-		if(client.conn.id != table.activePlayers[table.turnHolder].id) {
-			log.notice("Non-current player sent hit")
-			return
-		}
+        // Start game
+        table.state = "playing";
 
-		// Draw a card
-		player.hand.push(table.deck.pop())
+        // Deal cards
+        for (ply in table.activePlayers) {
+            ply.hand = [drawCard(), drawCard()];
+        }
 
-		// Check for bust/blackjack
-		var score = calculateScore()
-		player.score = score
-		if(score >= 21) {
-			nextPlayer()
-		}
-    })
+        table.dealerHand = [drawCard(), drawCard()];
 
-    client.on('stand', function(){
-		// Make sure that game is in playing state
-		if(table.state != "playing") {
-			return
-		}
+        io.sockets.emit('updateTableState', table);
+    });
 
-		// Make sure that stander is current player
-		if(client.conn.id != table.activePlayers[table.turnHolder].id) {
-			log.notice("Non-current player sent stand")
-			return
-		}
+    client.on('hit', function () {
+        // Make sure that game is in playing state
+        if (table.state != "playing") {
+            return;
+        }
 
-		nextPlayer()
-    })
-})
+        // Make sure that hitter is current player
+        if (client.conn.id != table.turnHolder) {
+            log.notice("Non-current player sent hit");
+            return;
+        }
 
-server.listen(13337)
-log.info('Server listening on localhost:13337')
+        // Draw a card
+        player.hand.push(drawCard());
+
+        // Check for bust/blackjack
+        var score = calculateScore();
+        player.score = score;
+        if (score >= 21) {
+            nextPlayer();
+        }
+    });
+
+    client.on('stand', function () {
+        // Make sure that game is in playing state
+        if (table.state != "playing") {
+            return;
+        }
+
+        // Make sure that stander is current player
+        if (client.conn.id != table.turnHolder) {
+            log.notice("Non-current player sent stand");
+            return;
+        }
+
+        nextPlayer();
+    });
+
+    client.on('disconnect', function () {
+        delete table.activePlayers[client.conn.id];
+    });
+});
+
+server.listen(13337);
+log.info('Server listening on localhost:13337');
