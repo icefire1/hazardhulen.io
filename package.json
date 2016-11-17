@@ -22,6 +22,9 @@
   "homepage": "https://github.com/DrBumlehund/hazardhulen.io#readme",
   "dependencies": {
     "express": "^4.14.0",
-    "socket.io": "^1.5.1"
+    "socket.io": "^1.5.1",
+    "monolog": "^0.0.5",
+    "source-map-support": "^0.4.6",
+    "lodash": "^4.17.2"
   }
 }
