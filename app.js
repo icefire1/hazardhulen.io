@@ -26,8 +26,7 @@ function drawCard() {
 }
 
 function nextPlayer() {
-    //table.turnHolder = (table.turnHolder + 1) % table.activePlayers.length;
-    //return table.activePlayers[table.turnHolder];
+    log.info("Next player", table.turnHolder)
 
     var isNext = false;
     for (ply in table.activePlayers) {
