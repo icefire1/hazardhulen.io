@@ -1,6 +1,6 @@
 # HazardHulen.IO
 
-## The software ##
+## The software
 
 HazardHulen.io is a multiplayer blackjack table, where players can bet virtual
 currency to participate in a round of blackjack. The game uses the same ruleset as
@@ -12,7 +12,7 @@ to place a bet of at least a minimum amount to play. If a player does not place
 a bet within a certain time period in between rounds, he is labeled as inactive,
 and cannot take part in the next round.
 
-## Technoly ##
+## Technology
 The client is written in HTML and jQuery, which uses socket.io to connect to the server.
 
 The server is written in JavaScript and uses socket.io to communicate with the clients.
