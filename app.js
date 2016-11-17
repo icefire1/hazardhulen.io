@@ -64,7 +64,9 @@ function calculateScore(hand) {
         values.push(card % 13);
     }
 
-    //var sum = values.reduce((a, b) = > a + b, 0)
+    var sum = values.reduce(function() {
+        return a + b
+    }, 0)
     while (sum > 21 && numAces > 0) {
         numAces -= 1;
         sum -= 10;
