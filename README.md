@@ -55,33 +55,29 @@ var express = require('express');
 var app = express();
 var server = require('http').createServer(app);
 var io = require('socket.io')(server);
+
 // ... omitted for brevity
+
 server.listen(13337);
 ```
 
 ### The Calls from the Client to the Server
 ```javascript
 io.on('connection', function (client) {
-    var id = client.conn.id;
-    var player = null;
+
+  // ... omitted for brevity
 
     client.emit('setId', id);
     client.emit('updateTableState', table);
 
     client.on('joinTable', function () {
-        player = {
-            'id': id,
-            'socket': client,
-            'hand': [],
-            'score': 0,
-            'bet': 0,
-            'balance': 15000
-        };
 
-        table.activePlayers[player.id] = player;
-        io.sockets.emit('updateTableState', table);
-        log.notice(player.id + " has joined the table.");
+      // ... omitted for brevity
+
     });
+
+  // ... omitted for brevity
+
 });
 ```
 
