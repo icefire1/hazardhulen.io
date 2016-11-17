@@ -1,14 +1,18 @@
 participant client as c
 participant server as s
+participant otherClients as oc
 
 note right of c: Client Connects \nto the server
 c -> s: onConnect()
 s --> c: updateTable(table)
+s -> oc: updateTable(table)
+note left of s: Whenever the table \nis updated, it is \nit is broadcasted to \nall connected clients
 
 alt User Joins a table to play
 c -> s: joinTable()
 s -> s: addClient\nToConnected\nList()
 s -> c: updateTable(table)
+s -> oc: updateTable(table)
 
 note right of c: player bet\n30 Sec timer before \nforced to leave table
 c -> s: bet(amount: int)
@@ -20,6 +24,8 @@ else
 s -> s: updatePot
 end
 s -> c: updateTable(table)
+s -> oc: updateTable(table)
+
 
 s -> s: startRound
 note right of s: deals two initial \ncards to all players \nand the dealer.
@@ -35,6 +41,7 @@ c -> s: stand()
 s -> s: skipClientTurn
 end
 s --> c: updateTable(table)
+s -> oc: updateTable(table)
 end
 
 s -> s: DealerTurn
@@ -45,7 +52,9 @@ s -> s: addClient\nToConnected\nList()
 
 loop on changes to the table
 s -> c: updateTable(table)
+s -> oc: updateTable(table)
 end
 end
 c -> s: leaveTable
 s --> c: updateTable(table)
+s -> oc: updateTable(table)
