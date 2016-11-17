@@ -1,7 +1,7 @@
 # HazardHulen.IO
+_by: Anders Bundgaard, Casper Beese Nielsen, Oliver Vestergaard, Simon Hjortshøj Larsen, Steen Schütt & Thomas Lemqvist_
 
 ## The software
-
 HazardHulen.io is a multiplayer blackjack table, where players can bet virtual
 currency to participate in a round of blackjack. The game uses the same ruleset as
 regular blackjack played in casinos, with a few details left out for simplicity.
@@ -29,4 +29,4 @@ The server is responsible for synchronizing the table across all clients. It use
 ![UML Class Diagram](https://github.com/DrBumlehund/off_the_books/blob/master/Documentation/ClassDiag.png "UML Class Diagram")
 The object diagram contains the two key objects used un this project, _Table_ and _Player_.
 
-\* The types set in the fields in the objects, are not according to UML standards. 
+\* The types set in the fields in the objects, are not according to UML standards.
