@@ -11,7 +11,7 @@ note left of s: Whenever the table \nis updated, it is \nit is broadcasted to \n
 alt User Joins a table to play
 c -> s: joinTable()
 s -> s: addClient\nToConnected\nList()
-s -> c: updateTable(table)
+s --> c: updateTable(table)
 s -> oc: updateTable(table)
 
 note right of c: player bet\n30 Sec timer before \nforced to leave table
@@ -23,7 +23,7 @@ s --> c: errorCantAffordBet()
 else
 s -> s: updatePot
 end
-s -> c: updateTable(table)
+s --> c: updateTable(table)
 s -> oc: updateTable(table)
 
 
