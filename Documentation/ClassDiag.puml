@@ -1,16 +1,16 @@
-package Server {
-  class Table {
-    state : string
-    turnHolder : Player
-    activePlayers : list<Player>
-    dealerHand : list<int>
-    deck : list<int>
-  }
+object Table {
+  deck : array
+  state : string
+  turnHolder : Player
+  activePlayers : array
+  dealerHand : array
+  deck : array
+}
 
-  class Player {
-    id : string
-    hand : list<int>
-    bet : int
-    balance : int
-  }
+object Player {
+  id : string
+  hand : array
+  score : int
+  bet : int
+  balance : int
 }

@@ -46,9 +46,45 @@ function nextPlayer() {
 }
 
 function dealerTurn() {
-    //Draw cards (If more than 50% players are above dealer, draw card) - LorteLogic(TM)
-    //Calculate Winners
-    //Payout
+    var dealerScore = calculateScore(table.dealerHand)
+    var highestHandOnTable
+    var lowestHandOnTable
+    for (var player in table.activePlayers) {
+        if(player.score > 21) highestHandOnTable *= -1
+        highestHandOnTable = Math.max(highestHandOnTable, player.score)
+        lowestHandOnTable = Math.min(lowestHandOnTable, player.score)
+    }
+    //Draw cards
+    while (dealerScore < 21) {
+        if (dealerScore > highestHandOnTable || dealerScore === 21) {
+            // the dealer stands
+            break
+        } else if (dealerScore < 17) {
+            // if has less than 17, he will draw a card.
+            table.dealerHand.push(drawCard())
+        } else if (dealerScore === 17) {
+            // if dealer is at 17, he has to stand.
+            break
+        } else {
+            if (dealerScore < lowestHandOnTable) {
+              // if dealer loses to all hands on table, while above 17 he will hit
+              // to try and cut losses.
+              table.dealerHand.push(drawCard())
+            } else {
+              // The dealer stands
+              break
+            }
+        }
+        dealerScore = calculateScore(table.dealerHand)
+    }
+
+    //Calculate Winners & Payout
+    for (var player in table.activePlayers) {
+        if (player.score > dealerScore && player.score < 22) {
+            // player wins
+            player.balance += player.bet * 2
+        }
+    }
 }
 
 function calculateScore(hand) {
