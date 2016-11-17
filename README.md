@@ -41,13 +41,13 @@ To run the server, you have to have npm (it can be downloaded along with node he
 npm is a package manager for Node. It npm is used to install bower, and other plugins, but most importantly bower.
 
 Run this in the command line to install bower: (from: https://bower.io)
-'''sh
+``` sh
     $ npm install -g bower
-''''
+```
 To start the server, now you simply just has to run the following command.
-'''sh
+``` sh
     $ npm start
-'''
+```
 
 Now the server should be up and running.
 
