@@ -2,6 +2,9 @@
 _by: Anders Bundgaard, Casper Beese Nielsen, Oliver Vestergaard, Simon Hjortshøj
 Larsen, Steen Schütt & Thomas Lemqvist_
 
+## Get pdf Version
+A pdf version of the documentation is located in the Documentation/tex folder.
+
 ## The software
 HazardHulen.io is a multiplayer blackjack table, where players can bet virtual
 currency to participate in a round of blackjack. The game uses the same ruleset
@@ -61,6 +64,20 @@ var io = require('socket.io')(server);
 server.listen(13337);
 ```
 
+The code snippet above is responsible for making the serve serve the clients
+the last line, sets the port, on which is listened on for requests to the server.
+
+```javascript
+var port = 13337;
+
+// ... omitted for brevity,
+
+var socket = io.connect("http://localhost:" + port + "/");
+```
+The code snippet above is taken from the client, and makes it connect to the
+server, in this case it connects to the localhost, on the port 13337.
+
+
 ### The Calls from the Client to the Server
 ```javascript
 io.on('connection', function (client) {
@@ -80,6 +97,8 @@ io.on('connection', function (client) {
 
 });
 ```
+The code snippet above is taken from the server, and it is responsible for taking
+commands from the client.
 
 ## How to run
 To run the server, you have to have npm (it can be downloaded along with
