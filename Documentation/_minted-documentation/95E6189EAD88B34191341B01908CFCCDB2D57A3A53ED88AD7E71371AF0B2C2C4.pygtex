@@ -1,0 +1,18 @@
+\begin{Verbatim}[commandchars=\\\{\}]
+\PYG{n+nx}{io}\PYG{p}{.}\PYG{n+nx}{on}\PYG{p}{(}\PYG{l+s+s1}{\PYGZsq{}connection\PYGZsq{}}\PYG{p}{,} \PYG{k+kd}{function} \PYG{p}{(}\PYG{n+nx}{client}\PYG{p}{)} \PYG{p}{\PYGZob{}}
+
+  \PYG{c+c1}{// ... omitted for brevity}
+
+    \PYG{n+nx}{client}\PYG{p}{.}\PYG{n+nx}{emit}\PYG{p}{(}\PYG{l+s+s1}{\PYGZsq{}setId\PYGZsq{}}\PYG{p}{,} \PYG{n+nx}{id}\PYG{p}{);}
+    \PYG{n+nx}{client}\PYG{p}{.}\PYG{n+nx}{emit}\PYG{p}{(}\PYG{l+s+s1}{\PYGZsq{}updateTableState\PYGZsq{}}\PYG{p}{,} \PYG{n+nx}{table}\PYG{p}{);}
+
+    \PYG{n+nx}{client}\PYG{p}{.}\PYG{n+nx}{on}\PYG{p}{(}\PYG{l+s+s1}{\PYGZsq{}joinTable\PYGZsq{}}\PYG{p}{,} \PYG{k+kd}{function} \PYG{p}{()} \PYG{p}{\PYGZob{}}
+
+      \PYG{c+c1}{// ... omitted for brevity}
+
+    \PYG{p}{\PYGZcb{});}
+
+  \PYG{c+c1}{// ... omitted for brevity}
+
+\PYG{p}{\PYGZcb{});}
+\end{Verbatim}

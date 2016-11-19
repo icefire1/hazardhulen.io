@@ -1,0 +1,10 @@
+\begin{Verbatim}[commandchars=\\\{\}]
+\PYG{k+kd}{var} \PYG{n+nx}{express} \PYG{o}{=} \PYG{n+nx}{require}\PYG{p}{(}\PYG{l+s+s1}{\PYGZsq{}express\PYGZsq{}}\PYG{p}{);}
+\PYG{k+kd}{var} \PYG{n+nx}{app} \PYG{o}{=} \PYG{n+nx}{express}\PYG{p}{();}
+\PYG{k+kd}{var} \PYG{n+nx}{server} \PYG{o}{=} \PYG{n+nx}{require}\PYG{p}{(}\PYG{l+s+s1}{\PYGZsq{}http\PYGZsq{}}\PYG{p}{).}\PYG{n+nx}{createServer}\PYG{p}{(}\PYG{n+nx}{app}\PYG{p}{);}
+\PYG{k+kd}{var} \PYG{n+nx}{io} \PYG{o}{=} \PYG{n+nx}{require}\PYG{p}{(}\PYG{l+s+s1}{\PYGZsq{}socket.io\PYGZsq{}}\PYG{p}{)(}\PYG{n+nx}{server}\PYG{p}{);}
+
+\PYG{c+c1}{// ... omitted for brevity}
+
+\PYG{n+nx}{server}\PYG{p}{.}\PYG{n+nx}{listen}\PYG{p}{(}\PYG{l+m+mi}{13337}\PYG{p}{);}
+\end{Verbatim}

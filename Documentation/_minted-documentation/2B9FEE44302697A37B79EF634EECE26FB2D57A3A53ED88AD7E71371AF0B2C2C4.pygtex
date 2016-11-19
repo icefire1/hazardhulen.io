@@ -1,0 +1,7 @@
+\begin{Verbatim}[commandchars=\\\{\}]
+\PYG{k+kd}{var} \PYG{n+nx}{port} \PYG{o}{=} \PYG{l+m+mi}{13337}\PYG{p}{;}
+
+\PYG{c+c1}{// ... omitted for brevity,}
+
+	\PYG{k+kd}{var} \PYG{n+nx}{socket} \PYG{o}{=} \PYG{n+nx}{io}\PYG{p}{.}\PYG{n+nx}{connect}\PYG{p}{(}\PYG{l+s+s2}{\PYGZdq{}http://localhost:\PYGZdq{}} \PYG{o}{+} \PYG{n+nx}{port} \PYG{o}{+} \PYG{l+s+s2}{\PYGZdq{}/\PYGZdq{}}\PYG{p}{);}
+\end{Verbatim}
