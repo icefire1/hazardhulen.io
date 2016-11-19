@@ -12,47 +12,66 @@ log.pushHandler(new ConsoleLogHandler());
 
 function table() {
     this.deck = _.shuffle(_.range(1, 52)),
-    this.turnHolder = 0,
-    this.activePlayers =[],
-    this.dealerHand = [],
-    this.state = 'idle'
+        this.turnHolder = 0,
+        this.activePlayers = [],
+        this.dealerHand = [],
+        this.dealerScore = 0,
+        this.state = 'idle'
 };
 
 function Player(id) {
-            this.id = id,
-            this.hand = [],
-            this.score = 0,
-            this.bet = 0,
-            this.balance = 15000
+    this.id = id,
+        this.hand = [],
+        this.score = 0,
+        this.bet = 0,
+        this.balance = 100
+        this.nickname = "NoName";
 };
 
 var table = new table();
 
+function resetTable(){
+    log.notice("Resetting Table...");
+    table.dealerHand = [];
+    table.dealerScore = 0;
+    for (var ply in table.activePlayers) {
+        ply = table.activePlayers[ply];
+        ply.hand = [];
+        ply.score = 0;
+        ply.bet = 0;
+    }
+    table.state = "idle";
+    table.turnHolder = 0;
+    updateTableState();
+}
+
 function drawCard() {
     var deck = table.deck;
-    var card = deck[deck.length-1];
-	deck.length = deck.length - 1;
+    var card = deck[deck.length - 1];
+    deck.length = deck.length - 1;
     return card;
 }
 
 function nextPlayer() {
-    log.info("Next player", table.turnHolder)
-	
-	table.turnHolder++;
+    table.turnHolder++;
 
-    if(table.turnHolder > table.activePlayers.length){
-	dealerTurn();	
-	}
+    log.info("Next player", table.turnHolder);
+
+    if (table.turnHolder > table.activePlayers.length-1) {
+        dealerTurn();
+    }
 }
 
 function dealerTurn() {
-    var dealerScore = calculateScore(table.dealerHand)
-    var highestHandOnTable
-    var lowestHandOnTable
-    for (var player in table.activePlayers) {
-        if(player.score > 21) highestHandOnTable *= -1
-        highestHandOnTable = Math.max(highestHandOnTable, player.score)
-        lowestHandOnTable = Math.min(lowestHandOnTable, player.score)
+    log.notice("Dealers Turn");
+    var dealerScore = calculateScore(table.dealerHand);
+    var highestHandOnTable;
+    var lowestHandOnTable;
+    for (var ply in table.activePlayers) {
+        var player = table.activePlayers[ply];
+        if (player.score > 21) highestHandOnTable *= -1;
+        highestHandOnTable = Math.max(highestHandOnTable, player.score);
+        lowestHandOnTable = Math.min(lowestHandOnTable, player.score);
     }
     //Draw cards
     while (dealerScore < 21) {
@@ -65,26 +84,30 @@ function dealerTurn() {
         } else if (dealerScore === 17) {
             // if dealer is at 17, he has to stand.
             break
-        } else {
+        } else {
             if (dealerScore < lowestHandOnTable) {
-              // if dealer loses to all hands on table, while above 17 he will hit
-              // to try and cut losses.
-              table.dealerHand.push(drawCard())
+                // if dealer loses to all hands on table, while above 17 he will hit
+                // to try and cut losses.
+                table.dealerHand.push(drawCard())
             } else {
-              // The dealer stands
-              break
+                // The dealer stands
+                break
             }
         }
         dealerScore = calculateScore(table.dealerHand)
     }
 
     //Calculate Winners & Payout
-    for (var player in table.activePlayers) {
+    for (var ply in table.activePlayers) {
+        var player = table.activePlayers[ply];
         if (player.score > dealerScore && player.score < 22) {
             // player wins
             player.balance += player.bet * 2
         }
     }
+    table.dealerScore = dealerScore;
+    table.state = "postGame";
+    setTimeout(resetTable, 15000);
 }
 
 function calculateScore(hand) {
@@ -92,17 +115,16 @@ function calculateScore(hand) {
     var numAces = 0;
 
     for (var card in hand) {
-		card = hand[card]
+        card = hand[card]
         // Value of image cards is 10
         var value = Math.min(card % 13, 10);
         if (value == 1) {
             value = 11;
             numAces += 1;
-        } else if(value == 0) {
-			value = 10;
-		}
+        } else if (value == 0) {
+            value = 10;
+        }
         values.push(value);
-		log.debug(card + " = " + value)
     }
 
     var sum = _.sum(values)
@@ -111,22 +133,19 @@ function calculateScore(hand) {
         sum -= 10;
     }
 
-	log.debug("Score calculated", sum)
     return sum;
 }
 
-function updateTableState(){
-	log.debug(table);
-	io.sockets.emit('updateTableState', JSON.stringify(table));
+function updateTableState() {
+    log.debug(table);
+    io.sockets.emit('updateTableState', JSON.stringify(table));
 }
 
-function findPlayer(id){
-		log.debug("Finding player - entering loop for id", id)
-	     for (var ply in table.activePlayers) {
-			 ply = table.activePlayers[ply];
-			 log.debug("Finding player", ply.id)
-            if (ply.id == id) return ply;
-        }
+function findPlayer(id) {
+    for (var ply in table.activePlayers) {
+        ply = table.activePlayers[ply];
+        if (ply.id == id) return ply;
+    }
 }
 
 app.use(express.static(__dirname + '/bower_components'));
@@ -136,14 +155,14 @@ app.get('/', function (req, res, next) {
 
 io.on('connection', function (client) {
     var id = client.conn.id;
-	
+
     client.emit('setId', id);
     updateTableState();
 
-    client.on('joinTable', function () {
-		log.notice("Hej jeg bliver kaldt");
-		var id = client.conn.id;
-		player = new Player(id);
+    client.on('joinTable', function (nickname) {
+        var id = client.conn.id;
+        player = new Player(id);
+        player.nickname = nickname;
         table.activePlayers.push(player);
         updateTableState();
         log.notice(player.id + " has joined the table.");
@@ -151,14 +170,14 @@ io.on('connection', function (client) {
 
     client.on('leaveTable', function () {
         if (table.state != "playing") {
-            delete table.activePlayers[client.conn.id];
+            table.activePlayers.splice(table.activePlayers.indexOf(findPlayer(client.conn.id)), 1);
             updateTableState();
         }
     });
 
     client.on('bet', function (amt) {
         // Don't allow player to bet twice
-        var player = findPlayer(client.conn.id)//TODO: find player function
+        var player = findPlayer(client.conn.id);
         if (player.bet != 0) {
             client.emit('errorAlreadyPlacedBet');
             return;
@@ -177,7 +196,7 @@ io.on('connection', function (client) {
 
         // Check whether all players have betted
         for (var ply in table.activePlayers) {
-			 ply = table.activePlayers[ply];
+            ply = table.activePlayers[ply];
             if (ply.bet == 0) return;
         }
 
@@ -186,14 +205,16 @@ io.on('connection', function (client) {
 
         // Deal cards
         for (var ply in table.activePlayers) {
-			 ply = table.activePlayers[ply];
+            ply = table.activePlayers[ply];
             ply.hand = [drawCard(), drawCard()];
-			log.notice("Player Hand: ", ply.hand);
+            var score = calculateScore(ply.hand);
+            ply.score = score;
+            log.notice("Player Hand: ", ply.hand);
         }
 
         table.dealerHand = [drawCard(), drawCard()];
-log.notice("Dealer hand: ", table.dealerHand);
-		
+        log.notice("Dealer hand: ", table.dealerHand);
+        table.dealerScore = calculateScore(table.dealerHand);
         updateTableState();
     });
 
@@ -203,9 +224,8 @@ log.notice("Dealer hand: ", table.dealerHand);
             return;
         }
 
-		var player = findPlayer(client.conn.id);
+        var player = findPlayer(client.conn.id);
         // Make sure that hitter is current player
-		log.notice(table.activePlayers.indexOf(player));
         if (table.activePlayers.indexOf(player) != table.turnHolder) {
             log.notice("Non-current player sent hit");
             return;
@@ -220,7 +240,7 @@ log.notice("Dealer hand: ", table.dealerHand);
         if (score >= 21) {
             nextPlayer();
         }
-		updateTableState();
+        updateTableState();
     });
 
     client.on('stand', function () {
@@ -230,16 +250,19 @@ log.notice("Dealer hand: ", table.dealerHand);
         }
 
         // Make sure that stander is current player
-        if (client.conn.id != table.turnHolder) {
+        var player = findPlayer(client.conn.id);
+        if (table.activePlayers.indexOf(player) != table.turnHolder) {
             log.notice("Non-current player sent stand");
             return;
         }
 
         nextPlayer();
+        updateTableState();
     });
 
     client.on('disconnect', function () {
-        delete table.activePlayers[client.conn.id];
+        table.activePlayers.splice(table.activePlayers.indexOf(findPlayer(client.conn.id)), 1);
+        updateTableState();
     });
 });
 
