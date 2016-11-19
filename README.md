@@ -3,7 +3,9 @@ _by: Anders Bundgaard, Casper Beese Nielsen, Oliver Vestergaard, Simon Hjortshø
 Larsen, Steen Schütt & Thomas Lemqvist_
 
 ## Get pdf Version
-A pdf version of the documentation is located in the Documentation/tex folder.
+A [pdf version](https://github.com/DrBumlehund/hazardhulen.io/blob/master/Documentation/documentation.pdf) of the documentation is located in the Documentation/tex folder.
+
+
 
 ## The software
 HazardHulen.io is a multiplayer blackjack table, where players can bet virtual
