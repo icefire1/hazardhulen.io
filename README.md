@@ -1,12 +1,13 @@
 # HazardHulen.IO
-_by: 
-Anders Bundgaard - abund14@student.sdu.dk, 
-Casper Beese Nielsen - casni14@student.sdu.dk, 
-Oliver Vestergaard - olves13@student.sdu.dk, 
+![BlackJack](https://github.com/DrBumlehund/off_the_books/blob/master/Documentation/blackjack.jpeg "BlackJack")
+
+_by:
+Anders Bundgaard - abund14@student.sdu.dk,
+Casper Beese Nielsen - casni14@student.sdu.dk,
+Oliver Vestergaard - olves13@student.sdu.dk,
 Simon Hjortshøj Larsen - sila114@student.sdu.dk,
 Steen Schütt - stesc14@student.sdu.dk
 & Thomas Lemqvist thlem14@student.sdu.dk._
-
 
 ## Get pdf Version
 A [pdf version](https://github.com/DrBumlehund/hazardhulen.io/blob/master/Documentation/documentation.pdf) of the documentation is located in the Documentation/tex folder.
