@@ -270,7 +270,8 @@ io.on('connection', function (client) {
     });
 });
 
-
+app.use(passport.initialize());
+//app.use(passport.session()); // persistent login sessions
 									  
 server.listen(port);
 log.info('Server listening on localhost:' + port);
