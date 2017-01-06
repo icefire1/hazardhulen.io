@@ -7,6 +7,9 @@ var monolog = require('monolog');
 var Logger = monolog.Logger;
 var ConsoleLogHandler = monolog.handler.ConsoleLogHandler;
 var _ = require('lodash');
+var configAuth = require('./auth')
+var FacebookStrategy = require('passport-facebook').Strategy;
+var passport = require('passport')
 
 var log = new Logger('hazardhulen');
 log.pushHandler(new ConsoleLogHandler());
@@ -267,5 +270,31 @@ io.on('connection', function (client) {
     });
 });
 
+
+// Redirect the user to Facebook for authentication.  When complete,
+// Facebook will redirect the user back to the application at
+//     /auth/facebook/callback
+app.get('/auth/facebook', passport.authenticate('facebook'));
+
+// Facebook will redirect the user to this URL after approval.  Finish the
+// authentication process by attempting to obtain an access token.  If
+// access was granted, the user will be logged in.  Otherwise,
+// authentication has failed.
+app.get('/auth/facebook/callback',
+	passport.authenticate('facebook', { successRedirect: '/', failureRedirect: '/505' }));
+	
+passport.use(new FacebookStrategy({
+    clientID: configAuth.clientID,
+    clientSecret: configAuth.clientSecret,
+    callbackURL: configAuth.callbackURL
+  },
+  function(accessToken, refreshToken, profile, done) {
+    User.findOrCreate({'facebook.id': profile.id}, function(err, user) {
+      if (err) { return done(err); }
+      done(null, user);
+    });
+  }
+));
+									  
 server.listen(port);
 log.info('Server listening on localhost:' + port);
