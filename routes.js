@@ -1,5 +1,4 @@
 var FacebookStrategy = require('passport-facebook').Strategy;
-var configAuth = require('./auth')
 var url = 'http://blackjack-di3.azurewebsites.net';
 //var url = 'http://localhost:3000';
 
