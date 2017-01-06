@@ -1,6 +1,6 @@
 var FacebookStrategy = require('passport-facebook').Strategy;
-//var url = 'http://blackjack-di3.azurewebsites.net';
-var url = 'http://localhost:3000';
+var url = 'http://blackjack-di3.azurewebsites.net';
+//var url = 'http://localhost:3000';
 
 module.exports = function(app, passport){
 	// Redirect the user to Facebook for authentication.  When complete,
