@@ -1,7 +1,6 @@
 var express = require('express');
 var app = express();
 var server = require('http').createServer(app);
-var http = require('http').Server(app);
 var io = require('socket.io')(server);
 var port = process.env.PORT || 3000;
 var monolog = require('monolog');
@@ -268,5 +267,5 @@ io.on('connection', function (client) {
     });
 });
 
-http.listen(port);
+server.listen(port);
 log.info('Server listening on localhost:' + port);
