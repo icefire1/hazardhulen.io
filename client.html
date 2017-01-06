@@ -3,7 +3,8 @@
 <head>
     <script src="/socket.io-client/socket.io.js"></script>
     <script src="/jquery/dist/jquery.js"></script>
-
+	
+	<script src="routes.js"></script>
     <script>
 
 
@@ -148,9 +149,13 @@
             $('#join').hide();
             $('#leave').show();
             var name = prompt("Enter your nickname");
-            socket.emit('joinTable', name);
+			joinTableName(name);
         }
 
+		function joinTableName(name) {
+            socket.emit('joinTable', name);
+		}
+		
         function bet() {
             var amount = prompt("Please enter the amount you wish to bet.", "5");
             socket.emit('bet', amount);
@@ -227,8 +232,9 @@
 
 <button id="join" onclick="joinTable()">Join</button>
 <button id="leave" onclick="leaveTable()">Leave</button>
-	</br>
-	<a href="/auth/facebook">Login with Facebook</a>
+</br>
+</br>
+<a href="/auth/facebook">Login with Facebook</a>
 
 <div style="margin-left:-100px;">
     <div style="text-align: center">
