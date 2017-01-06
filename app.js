@@ -8,6 +8,7 @@ var Logger = monolog.Logger;
 var ConsoleLogHandler = monolog.handler.ConsoleLogHandler;
 var _ = require('lodash');
 var passport = require('passport')
+var bodyParser = require('body-parser');
 
 var log = new Logger('hazardhulen');
 log.pushHandler(new ConsoleLogHandler());
@@ -150,9 +151,12 @@ function findPlayer(id) {
     }
 }
 
+app.use(bodyParser.urlencoded({extended: false}));
+app.use(bodyParser.json()) // parse application/json
 app.use(express.static(__dirname + '/bower_components'));
 app.get('/', function (req, res, next) {
-    res.sendFile(__dirname + '/client.html');
+	console.log('send file: ' + req.user)
+    res.sendFile(__dirname + '/client.html', { user: req.user });
 });
 
 io.on('connection', function (client) {
