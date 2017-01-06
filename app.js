@@ -7,8 +7,6 @@ var monolog = require('monolog');
 var Logger = monolog.Logger;
 var ConsoleLogHandler = monolog.handler.ConsoleLogHandler;
 var _ = require('lodash');
-var configAuth = require('./auth')
-var FacebookStrategy = require('passport-facebook').Strategy;
 var passport = require('passport')
 
 var log = new Logger('hazardhulen');
@@ -272,6 +270,7 @@ io.on('connection', function (client) {
 
 app.use(passport.initialize());
 //app.use(passport.session()); // persistent login sessions
+require('./routes.js')(app, passport);
 									  
 server.listen(port);
 log.info('Server listening on localhost:' + port);
