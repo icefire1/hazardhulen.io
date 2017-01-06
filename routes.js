@@ -15,9 +15,9 @@ module.exports = function(app, passport){
 		passport.authenticate('facebook', { successRedirect: '/', failureRedirect: '/505' }));
 		
 	passport.use(new FacebookStrategy({
-		clientID: configAuth.clientID,
-		clientSecret: configAuth.clientSecret,
-		callbackURL: configAuth.callbackURL
+		clientSecret: '485f3f3eddef688fb526da6ea90415a1',
+		clientID: '1825318221083118',
+		callbackURL: 'http://blackjack-di3.azurewebsites.net'
 	  },
 	  function(accessToken, refreshToken, profile, done) {
 		User.findOrCreate({'facebook.id': profile.id}, function(err, user) {
