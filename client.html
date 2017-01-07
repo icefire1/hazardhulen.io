@@ -37,15 +37,29 @@
         var ID = null;
 
         var socket = io.connect(location.protocol+"//"+location.hostname+":" + port + "/");
-
+		
+		var playersToJoin = 50		;
+		var currentPlayers = 1;
+		var startTime = new Date();
+		
+		for (i = 0; i < playersToJoin; i++) { 
+			var socker =io.connect(location.protocol+"//"+location.hostname+":" + port + "/");
+            socker.emit('joinTable', 'player'+i);
+			socker.disconnect();
+		}
 
         socket.on('updateTableState', function (boardState) {
             //Handle Board State
             reset();
-            console.log("Updating Board State: " + JSON.stringify(boardState));
+            //console.log("Updating Board State: " + JSON.stringify(boardState));
             var boardState = JSON.parse(boardState);
+					console.log("Test done in: " + (new Date().getTime() - startTime));
+			if (boardState.activePlayers.size >= playersToJoin) {
+			
+					console.log("Test done in: " + (new Date().getTime() - startTime));
+					}
 
-            console.log(boardState);
+            //console.log(boardState);
             updatePlayers(boardState);
 
             $.each(boardState.dealerHand, function (i, card) {
@@ -81,7 +95,6 @@
         function updatePlayers(board) {
 
             $.each(board.activePlayers, function (i, player) {
-
                 $.each(player.hand, function (ii, card) {
                     addCard(i, card, ii)
                 });
